@@ -1,0 +1,6 @@
+{
+  "name": "HarvestShare",
+  "description": "A real-time food donation platform connecting donors, NGOs, and volunteers to reduce food waste and support the community.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["Real-time updates", "Multi-user flow", "Donation tracking"]
+}
