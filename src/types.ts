@@ -1,52 +1,41 @@
-import { LucideIcon } from 'lucide-react';
+export type Role = 'DONOR' | 'VOLUNTEER' | 'ADMIN';
 
-export enum DonationStatus {
-  POSTED = 'Posted',
-  ACCEPTED = 'Accepted',
-  COLLECTED = 'Collected',
-  DELIVERED = 'Delivered',
-  COMPLETED = 'Completed',
-  EXPIRED = 'Expired'
+export type DonationStatus = 'REQUESTED' | 'ON_THE_WAY' | 'RECEIVED';
+
+export interface AuthUser {
+  id: number;
+  username: string;
+  role: Role;
 }
 
-export interface Location {
-  address: string;
-  lat: number;
-  lng: number;
+export interface AuthResponse {
+  token: string;
+  user: AuthUser;
 }
 
 export interface Donation {
-  id: string;
-  donorId: string;
-  donorName: string;
-  foodName: string; // Renamed from title to foodName
-  description: string;
-  quantity: string;
-  category: string;
-  location: Location;
-  expiryTime: string;
-  imageUrl: string;
+  id: number;
+  donorId: number;
+  donorUsername: string;
+  assignedVolunteerId: number | null;
+  assignedVolunteerUsername: string | null;
+  pickupAddress: string;
+  foodDescription: string | null;
+  imageUrl: string | null;
   status: DonationStatus;
   createdAt: string;
-  volunteerId?: string;
-  volunteerName?: string;
-  recipientOrg?: string;
-  notes?: string;
+  updatedAt: string;
 }
 
-export interface User {
-  id: string;
-  name: string;
-  type: 'Donor' | 'NGO' | 'Volunteer';
-  email: string;
-  location?: string;
+export interface CreateDonationPayload {
+  pickupAddress: string;
+  foodDescription: string;
+  imageUrl: string;
+  passcode: string;
 }
 
-export interface StatCard {
-  label: string;
-  value: string;
-  description: string; // Renamed from subtext
-  icon: LucideIcon; // Component instead of string icon name
-  color: string;
-  trend?: string;
+export interface UpdateDonationStatusPayload {
+  status: DonationStatus;
+  passcode?: string;
 }
+

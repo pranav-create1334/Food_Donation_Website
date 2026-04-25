@@ -1,20 +1,59 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Community Food Donation Platform
 
-# Run and deploy your AI Studio app
+Full-stack project with:
 
-This contains everything you need to run your app locally.
+- Frontend: React + Vite + TypeScript
+- Backend: Spring Boot + Spring Security (JWT) + Spring Data JPA
+- Database: H2 (default for local development)
 
-View your app in AI Studio: https://ai.studio/apps/9b5bf152-aba6-44e3-83dd-6b5faf01aaa5
+## Project Structure
 
-## Run Locally
+- Frontend root: `Food_Donation_Website/`
+- Backend: `Food_Donation_Website/Food_Donation/food_donation_backend`
 
-**Prerequisites:**  Node.js
+## Roles and Workflow
 
+- `DONOR`: creates donation requests with pickup address, food details, image URL, and passcode.
+- `VOLUNTEER`: marks donations `ON_THE_WAY`, then marks `RECEIVED` with donor passcode.
+- `ADMIN`: monitors all donations and their status changes.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## Local Run
+
+### 1) Backend
+
+```bash
+cd Food_Donation/food_donation_backend
+./gradlew bootRun
+```
+
+Default backend URL: `http://localhost:8080`
+
+Seeded demo users (password: `password123`):
+
+- `donor1` (`DONOR`)
+- `volunteer1` (`VOLUNTEER`)
+- `admin1` (`ADMIN`)
+
+### 2) Frontend
+
+```bash
+npm install
+npm run dev
+```
+
+Default frontend URL: `http://localhost:5173`
+
+The Vite dev server proxies `/api/*` to `http://localhost:8080`.
+
+## API Summary
+
+- `POST /api/auth/signup`
+- `POST /api/auth/signin`
+- `GET /api/donations`
+- `POST /api/donations` (`DONOR` only)
+- `PUT /api/donations/{id}/status` (`VOLUNTEER`/`ADMIN` only)
+
+## Environment Variables
+
+See `.env.example` for frontend and backend variables.
+

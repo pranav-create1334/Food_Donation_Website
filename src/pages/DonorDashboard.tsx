@@ -1,112 +1,249 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
-import { 
-  BarChart3, 
-  Heart, 
-  Leaf, 
-  Award, 
-  Clock, 
-  TrendingUp, 
-  ArrowUpRight,
-  PackageCheck,
-  Users
-} from 'lucide-react';
-import { Donation, DonationStatus } from '../types';
-import StatCard from '../components/StatCard';
-import StatusBadge from '../components/StatusBadge';
-import { format } from 'date-fns';
+import { useEffect, useMemo, useState } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
+import { useAuth } from '../auth';
+import DonationStatusPill from '../components/DonationStatusPill';
+import { createDonation, getDonations } from '../lib/api';
+import { donationImageOrFallback } from '../lib/media';
+import type { CreateDonationPayload, Donation } from '../types';
+
+const MAX_UPLOAD_SIZE_BYTES = 2 * 1024 * 1024;
+
+function generatePasscode(): string {
+  return String(Math.floor(1000 + Math.random() * 9000));
+}
+
+const EMPTY_FORM: CreateDonationPayload = {
+  pickupAddress: '',
+  foodDescription: '',
+  imageUrl: '',
+  passcode: generatePasscode(),
+};
+
+function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result ?? ''));
+    reader.onerror = () => reject(new Error('Unable to read selected image'));
+    reader.readAsDataURL(file);
+  });
+}
 
 export default function DonorDashboard() {
+  const { token } = useAuth();
+  const [form, setForm] = useState<CreateDonationPayload>(EMPTY_FORM);
   const [donations, setDonations] = useState<Donation[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
+  const [error, setError] = useState('');
+  const [selectedImageName, setSelectedImageName] = useState('');
+  const [fileInputKey, setFileInputKey] = useState(0);
+
+  const refresh = async () => {
+    if (!token) {
+      return;
+    }
+    setFetching(true);
+    try {
+      const data = await getDonations(token);
+      setDonations(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load donations');
+    } finally {
+      setFetching(false);
+    }
+  };
 
   useEffect(() => {
-    fetch('/api/donations')
-      .then(res => res.json())
-      .then(data => {
-        // Filter for "my" donations (simplified for demo)
-        setDonations(data.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5));
-        setLoading(false);
-      });
-  }, []);
+    refresh();
+  }, [token]);
 
-  const stats = [
-    { label: 'Meals Provided', value: '450', description: 'Impact since joining HarvestHand', icon: Heart, color: 'bg-rose-50 text-rose-600', trend: '+15' },
-    { label: 'Waste Saved', value: '128kg', description: 'Environmental impact (CO2 equivalent)', icon: Leaf, color: 'bg-primary/10 text-primary' },
-    { label: 'Rescue Streak', value: '12 Days', description: 'Your consistency makes a difference!', icon: Award, color: 'bg-secondary/10 text-secondary' },
-  ];
+  const handleImageSelect = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      setSelectedImageName('');
+      setForm((prev) => ({ ...prev, imageUrl: '' }));
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      setError('Please select a valid image file');
+      setSelectedImageName('');
+      setForm((prev) => ({ ...prev, imageUrl: '' }));
+      return;
+    }
+
+    if (file.size > MAX_UPLOAD_SIZE_BYTES) {
+      setError('Image is too large. Please upload up to 2MB');
+      setSelectedImageName('');
+      setForm((prev) => ({ ...prev, imageUrl: '' }));
+      return;
+    }
+
+    setError('');
+    setSelectedImageName(file.name);
+    try {
+      const imageDataUrl = await fileToDataUrl(file);
+      setForm((prev) => ({ ...prev, imageUrl: imageDataUrl }));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to process image');
+      setSelectedImageName('');
+      setForm((prev) => ({ ...prev, imageUrl: '' }));
+    }
+  };
+
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!token) {
+      return;
+    }
+    if (!form.imageUrl) {
+      setError('Food image is required');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    try {
+      // Trim all string fields before submitting
+      const trimmedForm = {
+        pickupAddress: form.pickupAddress.trim(),
+        foodDescription: form.foodDescription.trim(),
+        imageUrl: form.imageUrl,
+        passcode: form.passcode.trim(),
+      };
+      await createDonation(trimmedForm, token);
+      setForm({
+        pickupAddress: '',
+        foodDescription: '',
+        imageUrl: '',
+        passcode: generatePasscode(),
+      });
+      setSelectedImageName('');
+      setFileInputKey((prev) => prev + 1);
+      await refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create donation');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const stats = useMemo(() => {
+    const requested = donations.filter((item) => item.status === 'REQUESTED').length;
+    const transit = donations.filter((item) => item.status === 'ON_THE_WAY').length;
+    const received = donations.filter((item) => item.status === 'RECEIVED').length;
+    return { requested, transit, received };
+  }, [donations]);
 
   return (
-    <div className="max-w-7xl mx-auto px-8 py-12 pb-32">
-      <div className="mb-12">
-        <div className="flex items-center gap-2 mb-2">
-            <Award className="w-4 h-4 text-primary" />
-            <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Impact Analytics</span>
-        </div>
-        <h1 className="text-4xl font-bold text-slate-900 tracking-tight">
-          Donor <span className="text-primary italic">Intelligence</span>
-        </h1>
+    <section className="dashboard-grid donor-grid">
+      <div className="panel">
+        <h2>Create Donation</h2>
+        <form className="form-grid" onSubmit={submit}>
+          <label>
+            Pickup Address
+            <input
+              value={form.pickupAddress}
+              onChange={(e) => setForm({ ...form, pickupAddress: e.target.value })}
+              required
+            />
+          </label>
+
+          <label>
+            Food Details
+            <textarea
+              value={form.foodDescription}
+              onChange={(e) => setForm({ ...form, foodDescription: e.target.value })}
+              rows={3}
+              required
+            />
+          </label>
+
+          <label>
+            Food Image
+            <input
+              key={fileInputKey}
+              type="file"
+              accept="image/*"
+              onChange={handleImageSelect}
+              required
+            />
+          </label>
+          {selectedImageName && <p className="helper-text">Selected image: {selectedImageName}</p>}
+          {form.imageUrl && (
+            <img className="upload-preview" src={form.imageUrl} alt="Selected donation preview" />
+          )}
+
+          <label>
+            Passcode
+            <div className="inline-control">
+              <input
+                value={form.passcode}
+                onChange={(e) => setForm({ ...form, passcode: e.target.value.trim() })}
+                pattern="\d{4,8}"
+                required
+              />
+              <button
+                type="button"
+                className="btn btn-light"
+                onClick={() => setForm({ ...form, passcode: generatePasscode() })}
+              >
+                Generate
+              </button>
+            </div>
+          </label>
+          {error && <p className="error-text">{error}</p>}
+          <button className="btn btn-primary" type="submit" disabled={loading}>
+            {loading ? 'Submitting...' : 'Submit Donation'}
+          </button>
+        </form>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12">
-        <StatCard stat={{ label: 'Meals Provided', value: '450', color: 'bg-emerald-50 text-emerald-700', description: '', icon: Heart }} />
-        <StatCard stat={{ label: 'NGO Connection', value: '14', color: 'bg-blue-50 text-blue-700', description: '', icon: Users }} />
-        <StatCard stat={{ label: 'Waste Saved', value: '128kg', color: 'bg-slate-100 text-slate-700', description: '', icon: Leaf }} />
-        <StatCard stat={{ label: 'Rescue Score', value: '98%', color: 'bg-primary text-white ', description: '', icon: Award }} />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Recent Activity */}
-        <div className="lg:col-span-8 space-y-6">
-           <div className="flex items-center justify-between mb-2">
-              <h2 className="text-xl font-bold text-slate-800">Your Recent Rescues</h2>
-              <button className="text-xs font-bold text-emerald-600 hover:underline">Download CSV Report</button>
-           </div>
-
-           <div className="space-y-3">
-             {loading ? (
-               [1,2,3].map(i => <div key={i} className="h-16 bg-slate-100 rounded-xl animate-pulse" />)
-             ) : donations.map(donation => (
-               <motion.div 
-                 key={donation.id}
-                 initial={{ opacity: 0, y: 10 }}
-                 animate={{ opacity: 1, y: 0 }}
-                 className="bg-white p-4 rounded-xl border border-slate-200 flex items-center justify-between hover:border-emerald-200 transition-all group"
-               >
-                 <div className="flex items-center gap-4">
-                    <img src={donation.imageUrl} className="w-12 h-12 rounded-lg object-cover" />
-                    <div>
-                       <h3 className="font-bold text-slate-800 text-sm">{donation.foodName}</h3>
-                       <p className="text-[10px] font-medium text-slate-400 capitalize">{format(new Date(donation.createdAt), 'MMM dd, hh:mm a')}</p>
-                    </div>
-                 </div>
-                 <div className="flex items-center gap-4">
-                    <StatusBadge status={donation.status} />
-                    <button className="text-slate-400 hover:text-emerald-600">
-                       <ArrowUpRight className="w-4 h-4" />
-                    </button>
-                 </div>
-               </motion.div>
-             ))}
-           </div>
+      <div className="panel">
+        <div className="panel-header">
+          <h2>My Donations</h2>
+          <button type="button" className="btn btn-light" onClick={refresh}>
+            Refresh
+          </button>
         </div>
-
-        <div className="lg:col-span-4 space-y-6">
-           <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Carbon Offset</h3>
-              <div className="flex items-end gap-2 mb-1">
-                 <span className="text-4xl font-bold text-slate-900">240</span>
-                 <span className="text-slate-500 font-bold mb-1">CO2e</span>
-              </div>
-              <p className="text-xs text-slate-500 leading-tight">Your donations have offset the equivalent of planting 12 trees this year.</p>
-              <div className="mt-6 w-full bg-slate-200 h-2 rounded-full overflow-hidden">
-                 <div className="bg-emerald-500 h-full w-[65%]" />
-              </div>
-              <p className="text-[10px] font-bold text-emerald-600 mt-2">65% to next level achievement</p>
-           </div>
+        <div className="stats-row">
+          <div className="stat-box">
+            <strong>{stats.requested}</strong>
+            <span>Requested</span>
+          </div>
+          <div className="stat-box">
+            <strong>{stats.transit}</strong>
+            <span>On The Way</span>
+          </div>
+          <div className="stat-box">
+            <strong>{stats.received}</strong>
+            <span>Received</span>
+          </div>
         </div>
+        {fetching ? (
+          <p>Loading donations...</p>
+        ) : donations.length === 0 ? (
+          <p>No donations yet.</p>
+        ) : (
+          <div className="list">
+            {donations.map((donation) => (
+              <article key={donation.id} className="list-item">
+                <img
+                  className="donation-thumb"
+                  src={donationImageOrFallback(donation.imageUrl)}
+                  alt="Donation food"
+                />
+                <div>
+                  <h3>{donation.pickupAddress}</h3>
+                  <p>{donation.foodDescription || 'No food details provided.'}</p>
+                  <small>Created: {new Date(donation.createdAt).toLocaleString()}</small>
+                </div>
+                <DonationStatusPill status={donation.status} />
+              </article>
+            ))}
+          </div>
+        )}
       </div>
-    </div>
+    </section>
   );
 }
+
