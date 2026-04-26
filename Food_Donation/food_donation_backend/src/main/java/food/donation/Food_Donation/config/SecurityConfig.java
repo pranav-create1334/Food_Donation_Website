@@ -90,15 +90,17 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        // Allow both development and production origins
+        // Allow development and all production origins
         config.setAllowedOrigins(List.of(
             "http://localhost:5173",
             "http://localhost:8080",
-            "https://food-donation-website-amqz.onrender.com"
+            "https://food-donation-website-amqz.onrender.com",
+            "https://food-donation-website-ai8d7gyub-prs-projects-fa9db43c.vercel.app",
+            "https://food-donation-website-ai8d7gyub-prs-projects-fa9db43c-git-main-prs-projects.vercel.app"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(List.of("*"));
-        config.setExposedHeaders(List.of("Authorization"));
+        config.setExposedHeaders(List.of("Authorization", "Content-Type"));
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
