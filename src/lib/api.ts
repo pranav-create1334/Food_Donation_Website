@@ -6,9 +6,28 @@ import type {
   UpdateDonationStatusPayload,
 } from '../types';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '/api';
+const DEFAULT_API_BASE = '/api';
+const API_BASE = normalizeApiBase(import.meta.env.VITE_API_BASE_URL);
 
 type HttpMethod = 'GET' | 'POST' | 'PUT';
+
+function normalizeApiBase(baseUrl?: string): string {
+  const value = (baseUrl ?? DEFAULT_API_BASE).trim();
+  return value.endsWith('/') ? value.slice(0, -1) : value;
+}
+
+function extractErrorMessage(data: unknown, fallback: string): string {
+  if (!data || typeof data !== 'object') {
+    return fallback;
+  }
+
+  const apiError = data as { message?: string; error?: string; details?: string[] };
+  if (Array.isArray(apiError.details) && apiError.details.length > 0) {
+    return apiError.details[0];
+  }
+
+  return apiError.message ?? apiError.error ?? fallback;
+}
 
 async function apiRequest<T>(
   path: string,
@@ -18,27 +37,30 @@ async function apiRequest<T>(
 ): Promise<T> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
+    Accept: 'application/json',
   };
   if (token) {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE}${path}`, {
-    method,
-    headers,
-    body: body === undefined ? undefined : JSON.stringify(body),
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE}${path}`, {
+      method,
+      headers,
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+  } catch {
+    throw new Error('Unable to reach server. Please check your connection and try again.');
+  }
 
-  const data = await response.json().catch(() => null);
+  const responseType = response.headers.get('content-type') ?? '';
+  const data = responseType.includes('application/json')
+    ? await response.json().catch(() => null)
+    : null;
   if (!response.ok) {
-    let message = data?.message ?? data?.error ?? 'Request failed';
-    
-    // If there are validation error details, use the first one for a more specific message
-    if (data?.details && Array.isArray(data.details) && data.details.length > 0) {
-      message = data.details[0];
-    }
-    
-    throw new Error(message);
+    const fallback = response.status >= 500 ? 'Server error. Please try again in a moment.' : 'Request failed';
+    throw new Error(extractErrorMessage(data, fallback));
   }
 
   return data as T;
@@ -67,4 +89,3 @@ export function updateDonationStatus(
 ): Promise<Donation> {
   return apiRequest<Donation>(`/donations/${donationId}/status`, 'PUT', payload, token);
 }
-
