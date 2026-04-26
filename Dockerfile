@@ -39,12 +39,13 @@ RUN apk add --no-cache curl
 COPY --from=backend-builder /app/backend/build/libs/*.jar app.jar
 COPY --from=frontend-builder /app/frontend/dist ./static
 
-ENV PORT=8080
+# Set default PORT if not provided by environment (e.g., Render, Railway)
+ENV PORT=${PORT:-8080}
 ENV SPRING_PROFILES_ACTIVE=prod
 
-EXPOSE 8080
+EXPOSE ${PORT}
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-  CMD curl -f http://localhost:${PORT} || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD curl -f http://localhost:${PORT}/api/status || exit 1
 
 ENTRYPOINT ["sh", "-c", "java -Dserver.port=${PORT} -jar app.jar"]
