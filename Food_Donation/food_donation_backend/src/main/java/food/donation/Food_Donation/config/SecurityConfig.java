@@ -40,7 +40,26 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**", "/h2-console/**").permitAll()
+                .requestMatchers(
+                    "/api/auth/**",
+                    "/h2-console/**",
+                    "/",
+                    "/index.html",
+                    "/app",
+                    "/app/**",
+                    "/*.js",
+                    "/*.css",
+                    "/*.png",
+                    "/*.jpg",
+                    "/*.jpeg",
+                    "/*.gif",
+                    "/*.svg",
+                    "/*.ico",
+                    "/*.woff",
+                    "/*.woff2",
+                    "/*.ttf",
+                    "/*.eot"
+                ).permitAll()
                 .anyRequest().authenticated()
             )
             .headers(headers -> headers.frameOptions(frame -> frame.disable()))
@@ -71,8 +90,13 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:8080"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        // Allow both development and production origins
+        config.setAllowedOrigins(List.of(
+            "http://localhost:5173",
+            "http://localhost:8080",
+            "https://food-donation-website-amqz.onrender.com"
+        ));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("Authorization"));
         config.setAllowCredentials(true);
