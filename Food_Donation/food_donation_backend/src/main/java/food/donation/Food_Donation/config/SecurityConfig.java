@@ -90,7 +90,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        // Allow development and all production origins
+        // CORS is handled by CorsConfig.java WebMvcConfigurer
+        // This is kept for Spring Security filter chain compatibility
         config.setAllowedOrigins(List.of(
             "http://localhost:5173",
             "http://localhost:8080",

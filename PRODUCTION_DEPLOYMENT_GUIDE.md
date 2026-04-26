@@ -15,32 +15,47 @@ This project uses a **decoupled architecture**:
 
 ## Recent Fixes Applied
 
-### 1. Fixed 403 Error on /app Route
-- Created `WebController.java` to handle SPA routing
-- Updated `SecurityConfig.java` to permit static resources and `/app` path
-- Updated `render.json` to build and include frontend in backend JAR
+### 1. Fixed 500 Internal Server Error
+- **Root cause**: Nested `HomeController` inside `AuthController` was causing Spring initialization issues
+- **Fix**: Removed the nested class and created a proper standalone `WebController`
 
-### 2. Fixed "Failed to Fetch" Error
+### 2. Fixed CORS Issues
+- Updated `CorsConfig.java` with correct Vercel frontend URL
+- Removed duplicate CORS configuration conflicts
+
+### 3. Fixed API Routing
 - Updated `vercel.json` with correct backend URL (was placeholder)
-- Updated CORS configuration to allow Vercel frontend origin
-- Ensured `.env.production` has correct API base URL
+- Created proper `WebController` for root and `/app` endpoints
+
+### 4. Simplified Deployment
+- `render.json` now only builds the backend (frontend is separate on Vercel)
+- Clear separation of concerns between frontend and backend
 
 ## Files Modified
 
 ### Backend (Spring Boot)
 1. **`Food_Donation/food_donation_backend/src/main/java/food/donation/Food_Donation/controller/WebController.java`** (NEW)
-   - Handles SPA routing for `/app` and other frontend routes
+   - Handles `/`, `/app`, and `/api/status` endpoints
+   - Returns simple status messages
 
-2. **`Food_Donation/food_donation_backend/src/main/java/food/donation/Food_Donation/config/SecurityConfig.java`**
-   - Added `/app`, `/app/**`, static assets to `permitAll()`
-   - Added Vercel frontend URL to CORS allowed origins
+2. **`Food_Donation/food_donation_backend/src/main/java/food/donation/Food_Donation/controller/AuthController.java`**
+   - Removed problematic nested `HomeController`
+   - Clean REST API endpoints for auth
 
-3. **`render.json`**
-   - Updated build command to build frontend and include in backend JAR
+3. **`Food_Donation/food_donation_backend/src/main/java/food/donation/Food_Donation/config/CorsConfig.java`**
+   - Updated with correct Vercel frontend URL
+   - Added all necessary CORS headers
+
+4. **`Food_Donation/food_donation_backend/src/main/java/food/donation/Food_Donation/config/SecurityConfig.java`**
+   - Updated CORS to match `CorsConfig.java`
+   - Added `/app`, `/`, and static assets to permitted paths
+
+5. **`render.json`**
+   - Simplified to only build backend (frontend deployed separately)
 
 ### Frontend (Vite/React)
 1. **`vercel.json`**
-   - Fixed API rewrite to use actual backend URL instead of placeholder
+   - Fixed API rewrite to use actual backend URL
 
 2. **`.env.production`**
    - Already correctly configured with backend API URL
@@ -50,7 +65,7 @@ This project uses a **decoupled architecture**:
 ### Step 1: Push Changes to Git
 ```bash
 git add .
-git commit -m "Fix CORS and routing issues for production deployment"
+git commit -m "Fix production deployment issues - 500 error, CORS, routing"
 git push origin main
 ```
 
@@ -68,7 +83,11 @@ git push origin main
 
 #### Test Backend Health
 Visit: `https://food-donation-website-amqz.onrender.com/`
-Expected: "Backend is running successfully 🚀"
+Expected: "Food Donation API is running. Frontend is available at: ..."
+
+#### Test API Status
+Visit: `https://food-donation-website-amqz.onrender.com/api/status`
+Expected: `{"status":"ok","message":"Food Donation API is running"}`
 
 #### Test Frontend
 Visit: `https://food-donation-website-ai8d7gyub-prs-projects-fa9db43c.vercel.app/`
@@ -101,16 +120,21 @@ This is already in `.env.production` which Vercel uses during build.
 
 ## Troubleshooting
 
+### 500 Internal Server Error
+1. Check Render logs for error details
+2. Verify database connection settings
+3. Ensure all environment variables are set correctly
+
 ### "Failed to fetch" errors
 1. Check browser console for CORS errors
 2. Verify backend is running: visit `https://food-donation-website-amqz.onrender.com/`
 3. Check that `.env.production` has correct URL
 4. Verify `vercel.json` has correct backend URL
 
-### 403 Forbidden errors
-1. Check that `SecurityConfig.java` permits the requested paths
-2. Ensure frontend build includes correct API URL
-3. Verify Render deployment completed successfully
+### CORS errors
+1. Verify `CorsConfig.java` includes your frontend URL
+2. Check that backend has been redeployed with latest changes
+3. Clear browser cache and try again
 
 ### Database connection errors
 1. Check MySQL is running and accessible
@@ -120,6 +144,7 @@ This is already in `.env.production` which Vercel uses during build.
 ## Testing Checklist
 
 - [ ] Backend health check: `https://food-donation-website-amqz.onrender.com/`
+- [ ] API status check: `https://food-donation-website-amqz.onrender.com/api/status`
 - [ ] Frontend loads: `https://food-donation-website-ai8d7gyub-prs-projects-fa9db43c.vercel.app/`
 - [ ] Sign up works
 - [ ] Login works
@@ -127,11 +152,27 @@ This is already in `.env.production` which Vercel uses during build.
 - [ ] Can create/view donations
 - [ ] Logout works
 - [ ] No console errors
+- [ ] No CORS errors in network tab
+
+## API Endpoints
+
+### Public (No Auth Required)
+- `GET /` - API status message
+- `GET /app` - API status with frontend link
+- `GET /api/status` - JSON status check
+- `POST /api/auth/signup` - User registration
+- `POST /api/auth/signin` - User login
+
+### Protected (Requires JWT Token)
+- `GET /api/donations` - List all donations
+- `POST /api/donations` - Create new donation
+- `PUT /api/donations/:id/status` - Update donation status
 
 ## Notes
 
-- The backend serves both API and static frontend files (for the Render deployment)
-- The Vercel frontend proxies API calls through Vercel's rewrites to the Render backend
+- Frontend and backend are deployed separately
+- Frontend on Vercel proxies API calls to Render backend
 - CORS is configured to allow both deployment origins
 - JWT tokens are used for authentication
 - All API endpoints (except auth) require authentication
+- Backend serves pure API, no static frontend files

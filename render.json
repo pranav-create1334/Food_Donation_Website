@@ -1,7 +1,7 @@
 {
   "name": "food-donation-website",
-  "description": "Food Donation Platform - Free Hosting on Render.com",
-  "buildCommand": "npm install && npm run build && cp -r dist Food_Donation/food_donation_backend/src/main/resources/static/ && cd Food_Donation/food_donation_backend && chmod +x gradlew && ./gradlew clean build -x test --no-daemon",
+  "description": "Food Donation Platform Backend API - Deployed on Render.com",
+  "buildCommand": "cd Food_Donation/food_donation_backend && chmod +x gradlew && ./gradlew clean build -x test --no-daemon",
   "startCommand": "java -Dserver.port=$PORT -jar /app/app.jar",
   "env": [
     {

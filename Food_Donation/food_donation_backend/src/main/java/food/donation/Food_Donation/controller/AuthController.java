@@ -18,15 +18,6 @@ public class AuthController {
         this.authService = authService;
     }
 
-    @RestController
-    public class HomeController {
-
-        @GetMapping("/")
-        public String home() {
-            return "Backend is running successfully 🚀";
-        }
-    }
-
     @PostMapping("/signup")
     @ResponseStatus(HttpStatus.CREATED)
     public AuthResponse signup(@Valid @RequestBody RegisterRequest request) {
@@ -38,4 +29,3 @@ public class AuthController {
         return authService.signin(request);
     }
 }
-

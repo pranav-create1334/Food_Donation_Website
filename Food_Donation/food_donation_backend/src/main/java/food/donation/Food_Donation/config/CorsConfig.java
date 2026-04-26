@@ -15,12 +15,16 @@ public class CorsConfig {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
                         .allowedOrigins(
-                            "https://food-donation-website-eta.vercel.app",
+                            "https://food-donation-website-ai8d7gyub-prs-projects-fa9db43c.vercel.app",
+                            "https://food-donation-website-ai8d7gyub-prs-projects-fa9db43c-git-main-prs-projects.vercel.app",
+                            "https://food-donation-website-amqz.onrender.com",
                             "http://localhost:3000",
-                            "http://localhost:5173"
+                            "http://localhost:5173",
+                            "http://localhost:8080"
                         )
-                        .allowedMethods("*")
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD")
                         .allowedHeaders("*")
+                        .exposedHeaders("Authorization", "Content-Type")
                         .allowCredentials(true)
                         .maxAge(3600);
             }
