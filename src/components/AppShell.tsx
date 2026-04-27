@@ -17,8 +17,8 @@ export default function AppShell({ children }: { children: ReactNode }) {
     <div className="app-shell">
       <header className="site-topbar">
         <Link className="marketing-brand" to={user ? homePathForRole(user.role) : '/'}>
-          <span className="brand-badge">H</span>
-          <span>HarvestShare</span>
+          <span className="brand-badge">A</span>
+          <span>Annapurna</span>
         </Link>
 
         <nav className="site-nav">
@@ -77,7 +77,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
       <footer className="site-footer">
         <div className="site-footer-grid">
           <div>
-            <h4>HarvestShare</h4>
+            <h4>Annapurna</h4>
             <p>Community food donation platform connecting donors, volunteers, and NGOs with secure pickup flow.</p>
           </div>
           <div>
@@ -94,13 +94,12 @@ export default function AppShell({ children }: { children: ReactNode }) {
           </div>
           <div>
             <h5>Contact</h5>
-            <p>support@harvestshare.org</p>
+            <p>support@annapurna.org</p>
             <p>+91 98765 43210</p>
           </div>
         </div>
-        <p className="copyright">2026 HarvestShare. Reducing waste, one pickup at a time.</p>
+        <p className="copyright">2026 Annapurna. Reducing waste, one pickup at a time.</p>
       </footer>
     </div>
   );
 }
-

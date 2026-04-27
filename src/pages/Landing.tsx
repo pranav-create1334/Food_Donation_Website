@@ -58,7 +58,7 @@ export default function Landing() {
             <span>Sharing Surplus.</span>
           </h1>
           <p>
-            HarvestShare connects fresh surplus food to those who need it most. Donors, volunteers, and NGOs work
+            Annapurna connects fresh surplus food to those who need it most. Donors, volunteers, and NGOs work
             together in one secure flow.
           </p>
           <div className="cta-row">

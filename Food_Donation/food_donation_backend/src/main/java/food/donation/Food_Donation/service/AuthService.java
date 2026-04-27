@@ -9,6 +9,7 @@ import food.donation.Food_Donation.repository.UserRepository;
 import food.donation.Food_Donation.security.JwtService;
 import food.donation.Food_Donation.security.UserPrincipal;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -41,10 +42,6 @@ public class AuthService {
     public AuthResponse signup(RegisterRequest request) {
         String username = normalizeUsername(request.username());
         try {
-            if (userRepository.existsByUsername(username)) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username already exists");
-            }
-
             AppUser user = new AppUser();
             user.setUsername(username);
             user.setPassword(passwordEncoder.encode(request.password()));
@@ -52,6 +49,8 @@ public class AuthService {
             AppUser saved = userRepository.save(user);
 
             return toAuthResponse(saved);
+        } catch (DataIntegrityViolationException ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username already exists");
         } catch (DataAccessException ex) {
             throw new ResponseStatusException(
                 HttpStatus.SERVICE_UNAVAILABLE,
