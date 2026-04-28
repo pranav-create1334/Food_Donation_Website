@@ -20,6 +20,8 @@ export interface Donation {
   assignedVolunteerId: number | null;
   assignedVolunteerUsername: string | null;
   pickupAddress: string;
+  city: string | null;
+  contactNumber: string | null;
   foodDescription: string | null;
   imageUrl: string | null;
   status: DonationStatus;
@@ -29,6 +31,8 @@ export interface Donation {
 
 export interface CreateDonationPayload {
   pickupAddress: string;
+  city: string;
+  contactNumber: string;
   foodDescription: string;
   imageUrl: string;
   passcode: string;
@@ -38,4 +42,3 @@ export interface UpdateDonationStatusPayload {
   status: DonationStatus;
   passcode?: string;
 }
-

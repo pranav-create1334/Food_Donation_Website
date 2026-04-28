@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../auth';
 import DonationStatusPill from '../components/DonationStatusPill';
 import { getDonations, updateDonationStatus } from '../lib/api';
@@ -12,6 +12,42 @@ export default function VolunteerDashboard() {
   const [loadingId, setLoadingId] = useState<number | null>(null);
   const [error, setError] = useState('');
   const [fetching, setFetching] = useState(true);
+  const [selectedCity, setSelectedCity] = useState('');
+
+  const normalizeCity = (value: string | null | undefined): string => (value ?? '').trim().toLowerCase();
+
+  const cityOptions = useMemo(() => {
+    const uniqueCities = new Map<string, string>();
+    for (const donation of donations) {
+      const normalizedCity = normalizeCity(donation.city);
+      if (!normalizedCity) {
+        continue;
+      }
+      if (!uniqueCities.has(normalizedCity)) {
+        uniqueCities.set(normalizedCity, (donation.city ?? '').trim());
+      }
+    }
+    return Array.from(uniqueCities.entries())
+      .map(([normalized, label]) => ({ normalized, label }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [donations]);
+
+  const filteredDonations = useMemo(() => {
+    if (!selectedCity) {
+      return [];
+    }
+    return donations.filter((donation) => normalizeCity(donation.city) === selectedCity);
+  }, [donations, selectedCity]);
+
+  useEffect(() => {
+    if (!selectedCity) {
+      return;
+    }
+    const exists = cityOptions.some((option) => option.normalized === selectedCity);
+    if (!exists) {
+      setSelectedCity('');
+    }
+  }, [cityOptions, selectedCity]);
 
   const refresh = async () => {
     if (!token) {
@@ -73,14 +109,29 @@ export default function VolunteerDashboard() {
         </button>
       </div>
       <p className="helper-text">Signed in as {user?.username}. Move donations from requested to received using donor passcode.</p>
+      <label>
+        City
+        <select value={selectedCity} onChange={(e) => setSelectedCity(e.target.value)}>
+          <option value="">Select city</option>
+          {cityOptions.map((option) => (
+            <option key={option.normalized} value={option.normalized}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </label>
       {error && <p className="error-text">{error}</p>}
       {fetching ? (
         <p>Loading queue...</p>
       ) : donations.length === 0 ? (
         <p>No active pickups right now.</p>
+      ) : !selectedCity ? (
+        <p>Select a city to view pickup requests.</p>
+      ) : filteredDonations.length === 0 ? (
+        <p>No active pickups for the selected city.</p>
       ) : (
         <div className="list">
-          {donations.map((donation) => {
+          {filteredDonations.map((donation) => {
             const canReceive =
               donation.status === 'ON_THE_WAY' &&
               (donation.assignedVolunteerId === null || donation.assignedVolunteerId === user?.id);
@@ -93,8 +144,10 @@ export default function VolunteerDashboard() {
                 />
                 <div>
                   <h3>{donation.pickupAddress}</h3>
+                  <small>City: {donation.city || '-'}</small>
                   <p>{donation.foodDescription || 'No food details provided.'}</p>
                   <small>Donor: {donation.donorUsername}</small>
+                  <small>Contact: {donation.contactNumber || '-'}</small>
                 </div>
                 <div className="action-column">
                   <DonationStatusPill status={donation.status} />

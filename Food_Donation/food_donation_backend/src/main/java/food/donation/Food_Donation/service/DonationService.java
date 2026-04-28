@@ -38,6 +38,8 @@ public class DonationService {
         Donation donation = new Donation();
         donation.setDonor(donor);
         donation.setPickupAddress(request.pickupAddress().trim());
+        donation.setCity(request.city().trim());
+        donation.setContactNumber(request.contactNumber().trim());
         donation.setFoodDescription(request.foodDescription().trim());
         donation.setImageUrl(request.imageUrl().trim());
         donation.setPasscode(request.passcode().trim());
@@ -136,6 +138,8 @@ public class DonationService {
             donation.getAssignedVolunteer() == null ? null : donation.getAssignedVolunteer().getId(),
             donation.getAssignedVolunteer() == null ? null : donation.getAssignedVolunteer().getUsername(),
             donation.getPickupAddress(),
+            donation.getCity(),
+            donation.getContactNumber(),
             donation.getFoodDescription(),
             donation.getImageUrl(),
             donation.getStatus(),

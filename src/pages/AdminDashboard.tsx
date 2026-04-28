@@ -80,6 +80,8 @@ export default function AdminDashboard() {
                 <th>Donor</th>
                 <th>Volunteer</th>
                 <th>Pickup Address</th>
+                <th>City</th>
+                <th>Contact</th>
                 <th>Status</th>
                 <th>Updated</th>
               </tr>
@@ -98,6 +100,8 @@ export default function AdminDashboard() {
                   <td>{donation.donorUsername}</td>
                   <td>{donation.assignedVolunteerUsername ?? '-'}</td>
                   <td>{donation.pickupAddress}</td>
+                  <td>{donation.city || '-'}</td>
+                  <td>{donation.contactNumber || '-'}</td>
                   <td>
                     <DonationStatusPill status={donation.status} />
                   </td>

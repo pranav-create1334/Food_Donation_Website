@@ -10,6 +10,8 @@ public record DonationResponse(
     Long assignedVolunteerId,
     String assignedVolunteerUsername,
     String pickupAddress,
+    String city,
+    String contactNumber,
     String foodDescription,
     String imageUrl,
     DonationStatus status,
@@ -17,4 +19,3 @@ public record DonationResponse(
     Instant updatedAt
 ) {
 }
-

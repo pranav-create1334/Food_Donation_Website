@@ -45,6 +45,8 @@ public class SeedDataConfig {
             Donation requested = new Donation();
             requested.setDonor(donor);
             requested.setPickupAddress("14 MG Road, Bengaluru");
+            requested.setCity("Bengaluru");
+            requested.setContactNumber("9876543210");
             requested.setFoodDescription("Fresh cooked rice and curry for around 15 people.");
             requested.setImageUrl("https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=900&q=80");
             requested.setPasscode("1234");
@@ -54,6 +56,8 @@ public class SeedDataConfig {
             inTransit.setDonor(donor);
             inTransit.setAssignedVolunteer(volunteer);
             inTransit.setPickupAddress("22 Residency Road, Bengaluru");
+            inTransit.setCity("Bengaluru");
+            inTransit.setContactNumber("9876543210");
             inTransit.setFoodDescription("Packed bakery items from this evening batch.");
             inTransit.setImageUrl("https://images.unsplash.com/photo-1483695028939-5bb13f8648b0?auto=format&fit=crop&w=900&q=80");
             inTransit.setPasscode("5678");

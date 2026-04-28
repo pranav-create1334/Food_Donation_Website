@@ -14,6 +14,8 @@ function generatePasscode(): string {
 
 const EMPTY_FORM: CreateDonationPayload = {
   pickupAddress: '',
+  city: '',
+  contactNumber: '',
   foodDescription: '',
   imageUrl: '',
   passcode: generatePasscode(),
@@ -106,6 +108,8 @@ export default function DonorDashboard() {
       // Trim all string fields before submitting
       const trimmedForm = {
         pickupAddress: form.pickupAddress.trim(),
+        city: form.city.trim(),
+        contactNumber: form.contactNumber.trim(),
         foodDescription: form.foodDescription.trim(),
         imageUrl: form.imageUrl,
         passcode: form.passcode.trim(),
@@ -113,6 +117,8 @@ export default function DonorDashboard() {
       await createDonation(trimmedForm, token);
       setForm({
         pickupAddress: '',
+        city: '',
+        contactNumber: '',
         foodDescription: '',
         imageUrl: '',
         passcode: generatePasscode(),
@@ -149,6 +155,28 @@ export default function DonorDashboard() {
           </label>
 
           <label>
+            City
+            <input
+              value={form.city}
+              onChange={(e) => setForm({ ...form, city: e.target.value })}
+              placeholder="e.g. Pune"
+              required
+            />
+          </label>
+
+          <label>
+            Contact Number
+            <input
+              type="tel"
+              value={form.contactNumber}
+              onChange={(e) => setForm({ ...form, contactNumber: e.target.value })}
+              placeholder="e.g. 9876543210"
+              pattern="[+]?[0-9]{7,15}"
+              required
+            />
+          </label>
+
+          <label>
             Food Details
             <textarea
               value={form.foodDescription}
@@ -179,7 +207,7 @@ export default function DonorDashboard() {
               <input
                 value={form.passcode}
                 onChange={(e) => setForm({ ...form, passcode: e.target.value.trim() })}
-                pattern="\d{4,8}"
+                pattern="[0-9]{4,8}"
                 required
               />
               <button
@@ -234,7 +262,9 @@ export default function DonorDashboard() {
                 />
                 <div>
                   <h3>{donation.pickupAddress}</h3>
+                  <small>City: {donation.city || '-'}</small>
                   <p>{donation.foodDescription || 'No food details provided.'}</p>
+                  <small>Contact: {donation.contactNumber || '-'}</small>
                   <small>Created: {new Date(donation.createdAt).toLocaleString()}</small>
                 </div>
                 <DonationStatusPill status={donation.status} />
@@ -246,4 +276,3 @@ export default function DonorDashboard() {
     </section>
   );
 }
-

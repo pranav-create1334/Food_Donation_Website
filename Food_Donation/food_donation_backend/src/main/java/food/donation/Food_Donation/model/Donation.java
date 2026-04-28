@@ -35,6 +35,12 @@ public class Donation {
     @Column(nullable = false, length = 300)
     private String pickupAddress;
 
+    @Column(length = 120)
+    private String city;
+
+    @Column(length = 20)
+    private String contactNumber;
+
     @Column(length = 600)
     private String foodDescription;
 
@@ -101,6 +107,22 @@ public class Donation {
 
     public void setFoodDescription(String foodDescription) {
         this.foodDescription = foodDescription;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getContactNumber() {
+        return contactNumber;
+    }
+
+    public void setContactNumber(String contactNumber) {
+        this.contactNumber = contactNumber;
     }
 
     public String getImageUrl() {
