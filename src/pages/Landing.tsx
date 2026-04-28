@@ -25,10 +25,10 @@ const FEATURED_DONATIONS = [
 ];
 
 const IMPACT_STATS = [
-  { label: 'Meals Shared', value: '12,840' },
-  { label: 'Partner NGOs', value: '64' },
-  { label: 'Volunteer Pickups', value: '3,920' },
-  { label: 'Cities Active', value: '12' },
+  { label: 'Meals Shared', value: '2' },
+  { label: 'Partner NGOs', value: '0' },
+  { label: 'Volunteer Pickups', value: '1' },
+  { label: 'Cities Active', value: '1' },
 ];
 
 const PROCESS_STEPS = [
