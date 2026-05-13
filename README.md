@@ -5,7 +5,6 @@ Full-stack project with:
 - Frontend: React + Vite + TypeScript
 - Backend: Spring Boot + Spring Security (JWT) + Spring Data JPA
 - Database: H2 (default for local development)
-
 ## Project Structure
 
 - Frontend root: `Food_Donation_Website/`
@@ -18,7 +17,6 @@ Full-stack project with:
 - `ADMIN`: monitors all donations and their status changes.
 
 ## Local Run
-
 ### 1) Backend
 
 ```bash
@@ -36,10 +34,10 @@ Seeded demo users (password: `password123`):
 
 ### 2) Frontend
 
-```bash
+``bash
 npm install
 npm run dev
-```
+``
 
 Default frontend URL: http://localhost:5173
 
