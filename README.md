@@ -53,5 +53,5 @@ The Vite dev server proxies `/api/*` to `http://localhost:8080`.
 
 ## Environment Variables
 
-See `.env.example` for frontend and backend variables.
+See `.env.example` for frontend and backend variable.
 
