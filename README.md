@@ -41,7 +41,7 @@ npm install
 npm run dev
 ```
 
-Default frontend URL: `http://localhost:5173`
+Default frontend URL: http://localhost:5173
 
 The Vite dev server proxies `/api/*` to `http://localhost:8080`.
 
