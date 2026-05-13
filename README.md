@@ -26,7 +26,7 @@ cd Food_Donation/food_donation_backend
 ./gradlew bootRun
 ```
 
-Default backend URL: `http://localhost:8080`
+Default backend URL: http://localhost:8080
 
 Seeded demo users (password: `password123`):
 
